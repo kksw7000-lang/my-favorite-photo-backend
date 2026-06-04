@@ -69,7 +69,7 @@ async function loginUser(email, password) {
     const user = await userRepository.findByEmail(email);
     if (!user) {
       const error = new Error('존재하지 않는 이메일입니다.');
-      error.code = 400;
+      error.code = 404;
       throw error;
     }
 
@@ -85,7 +85,7 @@ async function passwordCheck(inputPassword, hashedPassword) {
   const isMatch = await bcrypt.compare(inputPassword, hashedPassword);
   if (!isMatch) {
     const error = new Error('이메일 또는 비밀번호가 일치하지 않습니다.');
-    error.code = 400;
+    error.code = 401;
     throw error;
   }
 }
@@ -106,13 +106,13 @@ async function refreshToken(userId, refreshToken) {
 
     if (!user || !storedToken) {
       const error = new Error('토큰이 존재하지 않습니다.');
-      error.code = 400;
+      error.code = 404;
       throw error;
     }
 
     if (storedToken.token !== refreshToken) {
       const error = new Error('토큰이 일치하지 않습니다.');
-      error.code = 400;
+      error.code = 401;
       throw error;
     }
 
