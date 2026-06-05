@@ -2,6 +2,7 @@ import express from 'express';
 import userService from './auth.service.js';
 import auth from './auth.js';
 import prisma from '../../config/db.js';
+import passport from '../../config/passport.js';
 
 const userController = express.Router();
 
@@ -105,11 +106,34 @@ userController.post('/logout', async (req, res, next) => {
   }
 });
 
-userController.post('/oauth/google', async (req, res, next) => {
-  try {
-  } catch (error) {
-    next(error);
+userController.get(
+  '/oauth/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+  })
+);
+
+userController.get(
+  '/oauth/google/callback',
+  passport.authenticate('google', { session: false }),
+  (req, res) => {
+    const accessToken = userService.createToken(req.user);
+    const refreshToken = userService.createToken(req.user, 'refresh');
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    return res.redirect('http://localhost:3000/');
   }
-});
+);
 
 export default userController;
